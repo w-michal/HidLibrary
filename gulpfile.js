@@ -27,7 +27,7 @@ gulp.task('build', ['assemblyInfo'], function() {
         .src('src/*.sln')
         .pipe(msbuild({
             toolsVersion: 'auto',
-            targets: ['Clean', 'Build'],
+            targets: ['Clean', 'Restore', 'Build'],
             errorOnFail: true,
             stdout: true
         }));
@@ -42,18 +42,15 @@ gulp.task('test', ['build'], function () {
 });
 
 gulp.task('nuget-package', ['build'], function() {
-
-    gulp.src('src/HidLibrary/bin/Release/**/HidLibrary.*')
-        .pipe(gulp.dest('package/lib'));
-
-    return Nuget()
-        .pack({
-            spec: 'HidLibrary.nuspec',
-            basePath: 'package',
-            version: args.buildVersion
-        });
+    return gulp.src('src/HidLibrary/*.csproj')
+        .pipe(msbuild({
+            toolsVersion: 'auto',
+            targets: ['Pack'],
+            properties: { PackageVersion: args.buildVersion },
+            stdout: true
+        }));
 });
 
 gulp.task('nuget-push', ['nuget-package'], function() {
-    return Nuget({ apiKey: args.nugetApiKey }).push('*.nupkg');
+    return Nuget({ apiKey: args.nugetApiKey }).push('src/HidLibrary/bin/**/*.nupkg');
 });
