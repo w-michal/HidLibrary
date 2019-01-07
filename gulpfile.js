@@ -27,7 +27,8 @@ gulp.task('build', ['assemblyInfo'], function() {
         .src('src/*.sln')
         .pipe(msbuild({
             toolsVersion: 'auto',
-            targets: ['Clean', 'Restore', 'Build'],
+            targets: ['Clean', 'Build'],
+            customArgs: '/restore',
             errorOnFail: true,
             stdout: true
         }));
